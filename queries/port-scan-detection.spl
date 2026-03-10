@@ -1,0 +1,9 @@
+index=main sourcetype="XmlWinEventLog:Security"
+| rex "<EventID>(?<event_id>\d+)</EventID>"
+| search event_id=5156
+| rex field=_raw "<Data Name='SourceAddress'>(?<SourceAddress>[^<]+)</Data>"
+| rex field=_raw "<Data Name='DestPort'>(?<DestPort>[^<]+)</Data>"
+| bin _time span=1m
+| stats dc(DestPort) as scanned_ports by SourceAddress _time
+| where scanned_ports > 10
+| sort - scanned_ports
