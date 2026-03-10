@@ -40,7 +40,7 @@ Once connectivity was confirmed, an Nmap scan was performed from Kali against th
 
 Example command used:
 
-nmap -sS 192.168.56.101
+nmap -sT 192.168.56.101
 
 nmap -sS 192.168.56.101
 
