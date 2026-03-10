@@ -1,80 +1,69 @@
-\# Lab Setup
+# Lab Setup
 
+## Objective
 
+Build a SOC-style detection engineering lab using Splunk Enterprise, Sysmon, a Windows 10 FLARE VM, and a Kali Linux attacker VM.
 
-\## Objective
+The goal of the lab is to generate security telemetry, ingest the logs into Splunk SIEM, simulate attacker behavior, and build detection logic capable of identifying suspicious activity such as port scanning.
 
-Build a SOC-style detection lab using Splunk Enterprise, Sysmon, a Windows 10 FLARE VM, and a Kali Linux attacker VM. The objective of the lab is to generate telemetry, ingest it into Splunk, and build detection logic for attacker activity.
+---
 
+## Lab Components
 
+### Target System
 
-\## Lab Components
+- Windows 10 FLARE VM
+- Splunk Enterprise 10.2.1
+- Sysmon
+- Windows Event Logs
 
+### Attacker System
 
+- Kali Linux
+- Nmap
 
-\### Target System
+### Virtualization Platform
 
-\- Windows 10 FLARE VM
+- Oracle VirtualBox
 
-\- Splunk Enterprise 10.2.1
+---
 
-\- Sysmon
+## Network Design
 
-\- Windows Event Logs
-
-
-
-\### Attacker System
-
-\- Kali Linux
-
-\- Nmap
-
-
-
-\### Virtualization
-
-\- Oracle VirtualBox
-
-
-
-\## Network Design
-
-The lab used host-only networking during attack simulation so the Kali VM could communicate directly with the Windows target.
-
-
+The lab environment used **VirtualBox host-only networking** to allow communication between the attacker and target systems without exposing the lab to the external network.
 
 Observed addressing during the lab:
 
-\- Windows target: `192.168.56.101`
+- Windows target VM: `192.168.56.101`
+- Kali attacker VM: `192.168.56.103`
 
-\- Kali attacker: `192.168.56.103`
+---
 
+## Splunk Setup
 
+Splunk Enterprise was installed on the Windows 10 FLARE VM and used as the Security Information and Event Management (SIEM) platform for log collection and analysis.
 
-\## Splunk Setup
+Key details:
 
-Splunk Enterprise was installed on the Windows VM and used as the SIEM platform.
+- Splunk Enterprise Version: **10.2.1**
+- Web interface: `http://localhost:8000`
+- Management port: `8089`
 
+The Splunk web interface was successfully accessed through a browser and administrative login was confirmed.
 
+Evidence screenshots:
 
-Important observations:
+- `01_Splunk_Login_Page.png`
+- `02_Splunk_Dashboard_Home.png`
+- `03_Splunk_Enterprise_Version.png`
 
-\- Splunk web interface available on port `8000`
+---
 
-\- Splunk management port `8089` visible during scanning
+## Sysmon Deployment
 
+Sysmon (System Monitor) from Microsoft Sysinternals was installed on the Windows target system to provide enhanced telemetry for process activity, network connections, file creation, and registry changes.
 
-
-\## Sysmon Setup
-
-Sysmon was installed and the service was confirmed running.
-
-
-
-Validation example:
+A configuration file was applied using the following command:
 
 ```cmd
-
-sc query sysmon64
-
+Sysmon64.exe -c C:\sysmonconfig.xml
