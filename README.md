@@ -1,260 +1,230 @@
-# \# Splunk SOC Detection Lab
+# Splunk SOC Detection Lab
 
-# 
+This project demonstrates how to build a small Security Operations Center (SOC) detection lab using Splunk, Sysmon, and a simulated attacker environment.
 
-# This project demonstrates how to build a small Security Operations Center (SOC) detection lab using Splunk, Sysmon, and a simulated attacker environment.
+The lab collects telemetry from a Windows endpoint, simulates attacker activity, and demonstrates how suspicious behavior can be identified using Splunk queries.
 
-# 
+------------------------------------------------------------
 
-# The lab collects telemetry from a Windows endpoint, simulates attacker activity, and demonstrates how suspicious behavior can be identified using Splunk queries.
+## Lab Overview
 
-# 
+Architecture used in this lab:
 
-# ------------------------------------------------------------
+- Windows 10 FLARE VM (Target System)
+- Kali Linux VM (Attacker)
+- Splunk Enterprise 10.2.1 (SIEM Platform)
+- Sysmon (Endpoint Telemetry Collection)
+- Oracle VirtualBox (Virtualization Platform)
 
-# 
+The objective is to simulate attacker reconnaissance activity and detect it using Splunk.
 
-# Lab Overview
+------------------------------------------------------------
 
-# 
+## Splunk Platform
 
-# Architecture used in this lab:
+Splunk Enterprise was installed on the Windows target VM to collect and analyze security telemetry.
 
-# 
+### Splunk Login
 
-# \- Windows 10 FLARE VM (Target System)
+![Splunk Login](screenshots/01_Splunk_Login_Page.png)
 
-# \- Kali Linux VM (Attacker)
+### Splunk Dashboard
 
-# \- Splunk Enterprise 10.2.1 (SIEM Platform)
+![Splunk Dashboard](screenshots/02_Splunk_Dashboard_Home.png)
 
-# \- Sysmon (Endpoint Telemetry Collection)
+### Splunk Version
 
-# \- Oracle VirtualBox (Virtualization Platform)
+![Splunk Version](screenshots/03_Splunk_Enterprise_Version.png)
 
-# 
+------------------------------------------------------------
 
-# The objective is to simulate attacker reconnaissance activity and detect it using Splunk.
+## Sysmon Telemetry
 
-# 
+Sysmon was deployed to enhance Windows logging capabilities and provide detailed endpoint telemetry including process activity, network connections, and file creation events.
 
-# ------------------------------------------------------------
+### Sysmon Logs in Splunk
 
-# 
+![Sysmon Logs](screenshots/05_Sysmon_Logs_Ingested_in_Splunk.png)
 
-# Splunk Platform
+### Sysmon Event Distribution
 
-# 
+![Sysmon Event Statistics](screenshots/06_Sysmon_EventID_Statistics.png)
 
-# Splunk Enterprise was installed on the Windows target VM to collect and analyze security telemetry.
+These logs confirm that endpoint telemetry is successfully being ingested into Splunk.
 
-# 
+------------------------------------------------------------
 
-# Splunk Login
+## Attack Simulation
 
-# 
+A reconnaissance scan was executed from the Kali Linux attacker VM against the Windows target.
 
-# !\[Splunk Login](screenshots/01\_Splunk\_Login\_Page.png)
+During testing, multiple scan techniques were evaluated including:
 
-# 
+nmap -sT 192.168.56.101  
+nmap -sS 192.168.56.101  
+nmap -sT -p- 192.168.56.101  
 
-# Splunk Dashboard
+For documentation purposes, the screenshot evidence below shows the full TCP port scan using:
 
-# 
+nmap -sT -p- 192.168.56.101
 
-# !\[Splunk Dashboard](screenshots/02\_Splunk\_Dashboard\_Home.png)
+This scan attempts to connect to all TCP ports on the target system and generates multiple network connection events visible in Windows Security logs.
 
-# 
+### Nmap Scan Evidence
 
-# Splunk Version
+![Kali Nmap Scan](screenshots/08_Kali_Nmap_Port_Scan.png)
 
-# 
+------------------------------------------------------------
 
-# !\[Splunk Version](screenshots/03\_Splunk\_Enterprise\_Version.png)
+## Port Scan Detection
 
-# 
+To identify scanning behavior, Windows Security Event ID 5156 was analyzed in Splunk.
 
-# ------------------------------------------------------------
+A detection query was created to identify hosts attempting connections to many distinct destination ports within a short time window.
 
-# 
+### Detection Query Result
 
-# Sysmon Telemetry
+![Port Scan Detection](screenshots/09_Splunk_Port_Scan_Detection.png)
 
-# 
+### Time-Based Correlation
 
-# Sysmon was deployed to enhance Windows logging capabilities and provide detailed endpoint telemetry including process activity, network connections, and file creation events.
+![Time Based Detection](screenshots/11_Time_Based_Port_Scan_Detection.png)
 
-# 
+### Final Detection Result
 
-# Sysmon Logs in Splunk
+![Final Detection Result](screenshots/12_Final_Port_Scan_Detection_Result.png)
 
-# 
+The detection successfully identified host:
 
-# !\[Sysmon Logs](screenshots/05\_Sysmon\_Logs\_Ingested\_in\_Splunk.png)
+192.168.56.103
 
-# 
+as performing port scanning activity against the Windows target system.
 
-# Sysmon Event Distribution
+### MITRE ATT&CK Mapping
 
-# 
+Tactic: Reconnaissance  
+Technique: T1046 – Network Service Discovery
 
-# !\[Sysmon Event Statistics](screenshots/06\_Sysmon\_EventID\_Statistics.png)
+------------------------------------------------------------
 
-# 
+## Suspicious PowerShell Execution Detection
 
-# These logs confirm that endpoint telemetry is successfully being ingested into Splunk.
+In addition to reconnaissance detection, the lab also demonstrates how suspicious PowerShell execution can be identified using Sysmon process telemetry.
 
-# 
+PowerShell logging was enabled using Local Group Policy to capture detailed script activity.
 
-# ------------------------------------------------------------
+The following logging features were enabled:
 
-# 
+- PowerShell Script Block Logging
+- PowerShell Module Logging
+- PowerShell Transcription
 
-# Attack Simulation
+These settings ensure that PowerShell activity generates detailed telemetry in both Sysmon logs and native PowerShell Operational logs.
 
-# 
+### Sysmon Verification
 
-# A reconnaissance scan was executed from the Kali Linux attacker VM against the Windows target.
+![Sysmon Running](screenshots/13_Sysmon_Service_Running.png)
 
-# 
+### Sysmon Event Viewer Log
 
-# Command used:
+![Sysmon Event Viewer](screenshots/14_Sysmon_Event_Viewer_Operational_Log.png)
 
-# 
+### Sysmon Event ID Statistics
 
-# nmap -sT -p- 192.168.56.101
+![Sysmon Event Statistics](screenshots/15_Sysmon_EventID_Statistics.png)
 
-# 
+### PowerShell Logging Configuration
 
-# This scan attempts to connect to all TCP ports on the target system.
+![PowerShell Logging](screenshots/16_PowerShell_Logging_Group_Policy.png)
 
-# 
+### Policy Update
 
-# Nmap Scan Evidence
+![GPUpdate](screenshots/17_GPUpdate_Force_Success.png)
 
-# 
+### Splunk Input Configuration
 
-# !\[Kali Nmap Scan](screenshots/08\_Kali\_Nmap\_Port\_Scan.png)
+PowerShell Operational logs were added to Splunk ingestion using the following configuration.
 
-# 
+![Inputs Configuration](screenshots/18_Splunk_Inputs_PowerShell_Operational.png)
 
-# ------------------------------------------------------------
+------------------------------------------------------------
 
-# 
+### Attack Simulation
 
-# Detection Engineering
+Suspicious PowerShell commands were executed locally on the Windows FLARE VM to simulate attacker behavior.
 
-# 
+Example execution:
 
-# To identify scanning behavior, Windows Security Event ID 5156 was analyzed in Splunk.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command "$env:TEMP | Out-File $env:TEMP\ps_test.txt"
 
-# 
+Encoded PowerShell execution was also simulated using the EncodedCommand flag.
 
-# A detection query was created to identify hosts attempting connections to many distinct destination ports within a short time window.
+### Encoded PowerShell Execution
 
-# 
+![Encoded PowerShell](screenshots/19_Suspicious_PowerShell_Encoded_Command.png)
 
-# Detection Query Result
+------------------------------------------------------------
 
-# 
+### Detection Logic
 
-# !\[Port Scan Detection](screenshots/09\_Splunk\_Port\_Scan\_Detection.png)
+Sysmon Event ID 1 (Process Creation) was analyzed in Splunk to identify suspicious PowerShell command line arguments such as:
 
-# 
+- -NoProfile
+- -EncodedCommand
+- -ExecutionPolicy Bypass
+- -WindowStyle Hidden
 
-# Time-Based Correlation
+### Sysmon Event ID 1 Search
 
-# 
+![Sysmon EventID1 Search](screenshots/22_Sysmon_PowerShell_EventID1_Search.png)
 
-# !\[Time Based Detection](screenshots/11\_Time\_Based\_Port\_Scan\_Detection.png)
+### Process Creation Results
 
-# 
+![Process Creation Results](screenshots/23_Sysmon_PowerShell_Process_Creation_Results.png)
 
-# Final Detection Result
+------------------------------------------------------------
 
-# 
+### Detection Result
 
-# !\[Final Detection Result](screenshots/12\_Final\_Port\_Scan\_Detection\_Result.png)
+The Splunk query successfully identified the suspicious PowerShell executions generated during the simulation.
 
-# 
+![PowerShell Detection](screenshots/20_Splunk_PowerShell_Detection_Result.png)
 
-# The detection successfully identified host:
+PowerShell Operational logs were also confirmed to be successfully ingested into Splunk.
 
-# 
+![PowerShell Operational Logs](screenshots/21_PowerShell_Operational_Logs_In_Splunk.png)
 
-# 192.168.56.103
+### MITRE ATT&CK Mapping
 
-# 
+Tactic: Execution  
+Technique: T1059.001 – PowerShell
 
-# as performing port scanning activity against the Windows target system.
+------------------------------------------------------------
 
-# 
+## Repository Structure
 
-# ------------------------------------------------------------
+splunk-soc-detection-lab
+│
+├─ README.md
+├─ documentation
+│   └─ lab-setup.md
+├─ attack-simulation
+│   ├─ nmap-scan.md
+│   └─ suspicious-powershell.md
+├─ queries
+│   ├─ port-scan-detection.spl
+│   └─ suspicious-powershell-detection.spl
+└─ screenshots
 
-# 
+------------------------------------------------------------
 
-# Repository Structure
+## Outcome
 
-# 
+This lab demonstrates how endpoint telemetry can be collected, analyzed, and used to detect reconnaissance behavior using Splunk SIEM.
 
-# splunk-soc-detection-lab
+The project highlights the process of:
 
-# │
-
-# ├─ README.md
-
-# ├─ documentation
-
-# │   └─ lab-setup.md
-
-# ├─ attack-simulation
-
-# │   └─ nmap-scan.md
-
-# ├─ queries
-
-# │   └─ port-scan-detection.spl
-
-# └─ screenshots
-
-# 
-
-# ------------------------------------------------------------
-
-# 
-
-# MITRE ATT\&CK Mapping
-
-# 
-
-# Tactic: Reconnaissance  
-
-# Technique: T1046 – Network Service Discovery
-
-# 
-
-# ------------------------------------------------------------
-
-# 
-
-# Outcome
-
-# 
-
-# This lab demonstrates how endpoint telemetry can be collected, analyzed, and used to detect reconnaissance behavior using Splunk SIEM.
-
-# 
-
-# The project highlights the process of:
-
-# 
-
-# \- Deploying endpoint telemetry
-
-# \- Collecting logs in a SIEM platform
-
-# \- Simulating attacker activity
-
-# \- Building detection logic to identify malicious behavior
-
+- Deploying endpoint telemetry
+- Collecting logs in a SIEM platform
+- Simulating attacker activity
+- Building detection logic to identify malicious behavior.

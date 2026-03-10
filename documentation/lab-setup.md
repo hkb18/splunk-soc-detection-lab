@@ -4,25 +4,24 @@
 
 Build a SOC-style detection engineering lab using Splunk Enterprise, Sysmon, a Windows 10 FLARE VM, and a Kali Linux attacker VM.
 
-The goal of the lab is to generate security telemetry, ingest the logs into Splunk SIEM, simulate attacker behavior, and build detection logic capable of identifying suspicious activity such as port scanning.
+The goal of the lab is to generate security telemetry, ingest logs into Splunk SIEM, and verify that system events can be monitored and analyzed.
 
 ---
 
-## Lab Components
+## Lab Architecture
 
-### Target System
+Target System
 
 - Windows 10 FLARE VM
 - Splunk Enterprise 10.2.1
 - Sysmon
-- Windows Event Logs
 
-### Attacker System
+Attacker System
 
 - Kali Linux
 - Nmap
 
-### Virtualization Platform
+Virtualization Platform
 
 - Oracle VirtualBox
 
@@ -30,40 +29,83 @@ The goal of the lab is to generate security telemetry, ingest the logs into Splu
 
 ## Network Design
 
-The lab environment used **VirtualBox host-only networking** to allow communication between the attacker and target systems without exposing the lab to the external network.
+The lab used VirtualBox **Host-Only Networking** so the attacker and target systems could communicate without exposing the lab externally.
 
-Observed addressing during the lab:
+Observed IP addresses:
 
 - Windows target VM: `192.168.56.101`
 - Kali attacker VM: `192.168.56.103`
 
 ---
 
-## Splunk Setup
+## Splunk Installation
 
-Splunk Enterprise was installed on the Windows 10 FLARE VM and used as the Security Information and Event Management (SIEM) platform for log collection and analysis.
+Splunk Enterprise was installed on the Windows 10 FLARE VM to collect and analyze system telemetry.
 
 Key details:
 
 - Splunk Enterprise Version: **10.2.1**
-- Web interface: `http://localhost:8000`
-- Management port: `8089`
+- Web Interface: `http://localhost:8000`
+- Management Port: `8089`
 
-The Splunk web interface was successfully accessed through a browser and administrative login was confirmed.
+### Splunk Login
 
-Evidence screenshots:
+![Splunk Login](../screenshots/01_Splunk_Login_Page.png)
 
-- `01_Splunk_Login_Page.png`
-- `02_Splunk_Dashboard_Home.png`
-- `03_Splunk_Enterprise_Version.png`
+### Splunk Dashboard
+
+![Splunk Dashboard](../screenshots/02_Splunk_Dashboard_Home.png)
+
+### Splunk Version
+
+![Splunk Version](../screenshots/03_Splunk_Enterprise_Version.png)
 
 ---
 
 ## Sysmon Deployment
 
-Sysmon (System Monitor) from Microsoft Sysinternals was installed on the Windows target system to provide enhanced telemetry for process activity, network connections, file creation, and registry changes.
+Sysmon was installed to provide enhanced endpoint telemetry including process activity, network connections, file creation, and registry changes.
 
-A configuration file was applied using the following command:
+The configuration file was applied using:
 
-```cmd
 Sysmon64.exe -c C:\sysmonconfig.xml
+
+
+The command output confirmed the configuration was validated and successfully applied.
+
+![Sysmon Config Loaded](../screenshots/04_Sysmon_Config_Loaded.png)
+
+---
+
+## Log Ingestion Verification
+
+After installing Sysmon, logs were verified inside Splunk.
+
+Sysmon logs appear under the sourcetype:
+
+XmlWinEventLog:Microsoft-Windows-Sysmon/Operational
+
+
+### Sysmon Logs in Splunk
+
+![Sysmon Logs](../screenshots/05_Sysmon_Logs_Ingested_in_Splunk.png)
+
+### Event ID Distribution
+
+![Event Statistics](../screenshots/06_Sysmon_EventID_Statistics.png)
+
+Observed Sysmon events included:
+
+| Event ID | Description |
+|--------|-------------|
+| 1 | Process creation |
+| 3 | Network connection |
+| 5 | Process termination |
+| 11 | File creation |
+| 22 | DNS query |
+
+### Network Telemetry Example
+
+![Sysmon Network Telemetry](../screenshots/07_Sysmon_EventID3_Network_Telemetry.png)
+
+This confirmed the Windows system telemetry was successfully being collected by Splunk.

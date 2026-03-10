@@ -1,0 +1,20 @@
+index=main sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational"
+| rex "<EventID>(?<event_id>\d+)</EventID>"
+| search event_id=1
+| rex field=_raw "<Data Name='Image'>(?<Image>[^<]+)</Data>"
+| rex field=_raw "<Data Name='CommandLine'>(?<CommandLine>[^<]+)</Data>"
+| rex field=_raw "<Data Name='ParentImage'>(?<ParentImage>[^<]+)</Data>"
+| search Image="*\\powershell.exe"
+| eval cmd=lower(CommandLine)
+| where like(cmd,"% -nop%")
+    OR like(cmd,"% -noprofile%")
+    OR like(cmd,"% -enc%")
+    OR like(cmd,"% -encodedcommand%")
+    OR like(cmd,"% -executionpolicy bypass%")
+    OR like(cmd,"% -w hidden%")
+    OR like(cmd,"% -windowstyle hidden%")
+    OR like(cmd,"%iex%")
+    OR like(cmd,"%downloadstring%")
+    OR like(cmd,"%webclient%")
+| table _time Image ParentImage CommandLine
+| sort - _time
