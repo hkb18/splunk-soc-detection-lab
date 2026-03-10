@@ -42,7 +42,7 @@ Example command used:
 
 nmap -sS 192.168.56.101
 
-nmap -sT -p- 192.168.56.101
+nmap -sS 192.168.56.101
 
 The purpose of these scans was to enumerate open ports and running services.
 
@@ -84,6 +84,7 @@ If a host connects to many unique ports in a short time window, it likely indica
 
 ## Splunk Detection Query
 
+```spl
 index=main sourcetype="XmlWinEventLog:Security"
 | rex "<EventID>(?<event_id>\d+)</EventID>"
 | search event_id=5156
@@ -93,6 +94,7 @@ index=main sourcetype="XmlWinEventLog:Security"
 | stats dc(DestPort) as scanned_ports by SourceAddress _time
 | where scanned_ports > 10
 | sort - scanned_ports
+```
 
 ## Detection Result
 
