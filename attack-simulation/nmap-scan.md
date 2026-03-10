@@ -42,9 +42,7 @@ Example command used:
 
 nmap -sS 192.168.56.101
 
-Another scan used:
-
-nmap -p 1-1000 192.168.56.101
+nmap -sT -p- 192.168.56.101
 
 The purpose of these scans was to enumerate open ports and running services.
 
