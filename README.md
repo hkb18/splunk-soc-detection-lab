@@ -201,6 +201,81 @@ Technique: T1059.001 – PowerShell
 
 ------------------------------------------------------------
 
+## Suspicious File Creation Detection
+
+Attackers frequently stage payloads or drop tools into user-accessible directories before executing them.
+
+Common directories used include:
+
+- %TEMP%
+- %APPDATA%
+- C:\Users\Public\
+
+Sysmon Event ID 11 (FileCreate) provides visibility into file creation activity on the system.
+
+------------------------------------------------------------
+
+### Attack Simulation
+
+To simulate malware staging behavior, files were created in commonly abused directories using PowerShell.
+
+Example commands executed on the Windows FLARE VM:
+
+"test payload" | Out-File "$env:TEMP\stage_payload.exe"  
+"test payload" | Out-File "$env:APPDATA\chrome_update.exe"  
+"test payload" | Out-File "C:\Users\Public\adobe_patch.bat"
+
+### Attack Simulation Evidence
+
+![File Creation Attack](screenshots/24_FileCreate_Attack_Simulation_PowerShell.png)
+
+------------------------------------------------------------
+
+### Sysmon Telemetry Evidence
+
+The file creation activity generated Sysmon Event ID 11 (FileCreate) events which were recorded in the Windows Sysmon Operational log.
+
+### Sysmon Event Viewer Evidence
+
+![Sysmon FileCreate Event](screenshots/25_Sysmon_EventID11_FileCreate_Event_Details.png)
+
+------------------------------------------------------------
+
+### Splunk Log Verification
+
+The generated file creation event was successfully ingested into Splunk.
+
+A raw search for the created file confirmed the presence of the event.
+
+### Raw Event in Splunk
+
+![Splunk Raw FileCreate Event](screenshots/26_Splunk_Raw_FileCreate_Event_Search.png)
+
+------------------------------------------------------------
+
+### Detection Logic
+
+A Splunk detection query was created to identify file creation events in directories commonly abused by attackers.
+
+The detection focuses on Sysmon Event ID 11 events where files are written to:
+
+- Temp directories
+- AppData directories
+- Public user folders
+
+### Detection Result
+
+![File Creation Detection Result](screenshots/27_Splunk_FileCreate_Detection_Result.png)
+
+The detection successfully identified the simulated payload creation activity during the attack simulation.
+
+### MITRE ATT&CK Mapping
+
+Tactic: Defense Evasion  
+Technique: T1105 – Ingress Tool Transfer
+
+------------------------------------------------------------
+
 ## Repository Structure
 
 splunk-soc-detection-lab
@@ -210,10 +285,12 @@ splunk-soc-detection-lab
 │   └─ lab-setup.md
 ├─ attack-simulation
 │   ├─ nmap-scan.md
-│   └─ suspicious-powershell.md
+│   ├─ suspicious-powershell.md
+│   └─ suspicious-file-creation.md
 ├─ queries
 │   ├─ port-scan-detection.spl
-│   └─ suspicious-powershell-detection.spl
+│   ├─ suspicious-powershell-detection.spl
+│   └─ suspicious-file-creation-detection.spl
 └─ screenshots
 
 ------------------------------------------------------------

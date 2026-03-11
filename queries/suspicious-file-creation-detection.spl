@@ -1,0 +1,5 @@
+index=main sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational "<EventID>11</EventID>"
+| rex field=_raw "<Data Name='TargetFilename'>(?<TargetFilename>[^<]+)"
+| rex field=_raw "<Data Name='Image'>(?<Image>[^<]+)"
+| search TargetFilename="*Temp*" OR TargetFilename="*AppData*" OR TargetFilename="*Public*"
+| table _time host Image TargetFilename
