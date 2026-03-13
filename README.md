@@ -276,6 +276,72 @@ Technique: T1105 – Ingress Tool Transfer
 
 ------------------------------------------------------------
 
+## Windows Brute Force Login Detection
+
+In addition to endpoint and reconnaissance detections, the lab also demonstrates detection of brute force login attempts against the Windows system.
+
+The attack was simulated from the Kali Linux attacker VM using repeated failed SMB authentication attempts against the Windows host.
+
+### Attack Simulation
+
+The attacker attempted multiple failed logins against a test user account.
+
+Target Windows IP:
+
+192.168.56.101
+
+### Connectivity Verification
+
+![Kali Connectivity Test](screenshots/29_kali_connectivity_test_ping.png)
+
+### Brute Force Attempt Simulation
+
+![Kali SMB Brute Force Attempts](screenshots/31_kali_smb_bruteforce_attempts.png)
+
+These failed authentication attempts generated Windows Security log events.
+
+Relevant Windows Event IDs:
+
+4625 – An account failed to log on  
+4776 – Credential validation attempt
+
+### Windows Event Evidence
+
+![Windows Event 4625](screenshots/33_windows_eventviewer_4625_details.png)
+
+![Windows Event 4776](screenshots/34_windows_eventviewer_4776_details.png)
+
+### Splunk Log Verification
+
+The failed authentication events were successfully ingested into Splunk.
+
+![Splunk Raw Event 4625](screenshots/37_splunk_raw_eventid_4625_logs.png)
+
+### Detection Query
+
+The following SPL query was used to detect brute force login activity.
+
+index=main sourcetype=XmlWinEventLog:Security "<EventID>4625</EventID>"
+| rex field=_raw "<Data Name='TargetUserName'>(?<TargetUserName>[^<]+)"
+| rex field=_raw "<Data Name='IpAddress'>(?<IpAddress>[^<]+)"
+| rex field=_raw "<Data Name='LogonType'>(?<LogonType>[^<]+)"
+| rex field=_raw "<Data Name='WorkstationName'>(?<WorkstationName>[^<]+)"
+| bin _time span=5m
+| stats count values(IpAddress) as src_ip values(WorkstationName) as workstation by _time TargetUserName
+| where count >= 5
+| sort - count
+
+### Detection Result
+
+![Brute Force Detection](screenshots/41_splunk_bruteforce_detection_results.png)
+
+### MITRE ATT&CK Mapping
+
+Tactic: Credential Access  
+Technique: T1110 – Brute Force
+
+------------------------------------------------------------
+
 ## Repository Structure
 
 splunk-soc-detection-lab
@@ -286,22 +352,25 @@ splunk-soc-detection-lab
 ├─ attack-simulation
 │   ├─ nmap-scan.md
 │   ├─ suspicious-powershell.md
-│   └─ suspicious-file-creation.md
+│   ├─ suspicious-file-creation.md
+│   └─ brute-force-logon.md
 ├─ queries
 │   ├─ port-scan-detection.spl
 │   ├─ suspicious-powershell-detection.spl
-│   └─ suspicious-file-creation-detection.spl
+│   ├─ suspicious-file-creation-detection.spl
+│   └─ brute-force-login-detection.spl
 └─ screenshots
 
 ------------------------------------------------------------
 
 ## Outcome
 
-This lab demonstrates how endpoint telemetry can be collected, analyzed, and used to detect reconnaissance behavior using Splunk SIEM.
+This lab demonstrates how endpoint telemetry can be collected, analyzed, and used to detect malicious behavior using Splunk SIEM.
 
 The project highlights the process of:
 
 - Deploying endpoint telemetry
 - Collecting logs in a SIEM platform
 - Simulating attacker activity
-- Building detection logic to identify malicious behavior.
+- Building detection logic to identify malicious behavior
+- Detecting brute force login attempts using Windows Security logs

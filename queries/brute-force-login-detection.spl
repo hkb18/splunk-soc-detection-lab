@@ -1,0 +1,9 @@
+index=main sourcetype=XmlWinEventLog:Security "<EventID>4625</EventID>"
+| rex field=_raw "<Data Name='TargetUserName'>(?<TargetUserName>[^<]+)"
+| rex field=_raw "<Data Name='IpAddress'>(?<IpAddress>[^<]+)"
+| rex field=_raw "<Data Name='LogonType'>(?<LogonType>[^<]+)"
+| rex field=_raw "<Data Name='WorkstationName'>(?<WorkstationName>[^<]+)"
+| bin _time span=5m
+| stats count values(IpAddress) as src_ip values(WorkstationName) as workstation by _time TargetUserName
+| where count >= 5
+| sort - count
