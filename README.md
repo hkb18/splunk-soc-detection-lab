@@ -321,6 +321,7 @@ The failed authentication events were successfully ingested into Splunk.
 
 The following SPL query was used to detect brute force login activity.
 
+```spl
 index=main sourcetype=XmlWinEventLog:Security "<EventID>4625</EventID>"
 | rex field=_raw "<Data Name='TargetUserName'>(?<TargetUserName>[^<]+)"
 | rex field=_raw "<Data Name='IpAddress'>(?<IpAddress>[^<]+)"
@@ -330,6 +331,7 @@ index=main sourcetype=XmlWinEventLog:Security "<EventID>4625</EventID>"
 | stats count values(IpAddress) as src_ip values(WorkstationName) as workstation by _time TargetUserName
 | where count >= 5
 | sort - count
+```
 
 ### Detection Result
 
@@ -344,6 +346,7 @@ Technique: T1110 – Brute Force
 
 ## Repository Structure
 
+```
 splunk-soc-detection-lab
 │
 ├─ README.md
@@ -360,6 +363,7 @@ splunk-soc-detection-lab
 │   ├─ suspicious-file-creation-detection.spl
 │   └─ brute-force-login-detection.spl
 └─ screenshots
+```
 
 ------------------------------------------------------------
 
