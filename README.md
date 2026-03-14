@@ -344,6 +344,31 @@ Technique: T1110 – Brute Force
 
 ------------------------------------------------------------
 
+## SOC Detection Dashboard
+
+A Splunk monitoring dashboard was created to visualize detection activity across the simulated attack scenarios. This dashboard provides a SOC-style monitoring view across authentication activity, network activity, process execution, and file system monitoring.
+
+### Dashboard Panels
+
+- Failed Login Attempts (Brute Force Detection)
+- Potential Port Scanning Hosts
+- Suspicious PowerShell Execution
+- Suspicious File Creation Activity
+
+### Dashboard Visualizations
+
+![Authentication and Network Monitoring](screenshots/42_splunk_soc_dashboard_authentication_network_monitoring.png)
+
+![Process and File Monitoring](screenshots/43_splunk_soc_dashboard_process_file_monitoring.png)
+
+### Dashboard Export
+
+The exported dashboard file can be found here:
+
+dashboard/soc_detection_dashboard.pdf
+
+------------------------------------------------------------
+
 ## Repository Structure
 
 ```
@@ -362,6 +387,8 @@ splunk-soc-detection-lab
 │   ├─ suspicious-powershell-detection.spl
 │   ├─ suspicious-file-creation-detection.spl
 │   └─ brute-force-login-detection.spl
+├─ dashboard
+│   └─ soc_detection_dashboard.pdf
 └─ screenshots
 ```
 
