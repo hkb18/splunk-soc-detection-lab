@@ -26,13 +26,18 @@ A TCP connect scan was executed from the Kali attacker machine.
 
 Command used:
 
+```bash
 nmap -sT -p- 192.168.56.101
+```
 
 This scan attempts to connect to every TCP port on the target system.
 
-nmap -sT 192.168.56.101
+Additional scans tested during experimentation:
 
+```bash
+nmap -sT 192.168.56.101
 nmap -sS 192.168.56.101
+```
 
 The purpose of these scans was to enumerate open ports and running services.
 
@@ -58,6 +63,7 @@ Ports `8000` and `8089` correspond to Splunk services running on the Windows hos
 
 This scan generates network connection telemetry that can later be analyzed in Splunk for detection engineering.
 
+---
 
 ## Log Source Used For Detection
 
@@ -72,6 +78,8 @@ The working detection source became Windows Security Event ID 5156.
 
 Event 5156 records network connections allowed through the Windows Filtering Platform.
 
+---
+
 ## Detection Logic
 
 The detection identifies a host contacting many different destination ports in a short time window.
@@ -83,8 +91,11 @@ DestPort
 
 If a host connects to many unique ports in a short time window, it likely indicates port scanning activity.
 
+---
+
 ## Splunk Detection Query
 
+```spl
 index=main sourcetype="XmlWinEventLog:Security"
 | rex "<EventID>(?<event_id>\d+)</EventID>"
 | search event_id=5156
@@ -94,6 +105,9 @@ index=main sourcetype="XmlWinEventLog:Security"
 | stats dc(DestPort) as scanned_ports by SourceAddress _time
 | where scanned_ports > 10
 | sort - scanned_ports
+```
+
+---
 
 ## Detection Result
 
@@ -105,6 +119,8 @@ The host contacted 15 different ports within the same time bucket.
 
 This matched the Nmap scan activity generated from the Kali machine.
 
+---
+
 ## MITRE ATT&CK Mapping
 
 Tactic  
@@ -112,6 +128,8 @@ Reconnaissance
 
 Technique  
 T1046 – Network Service Discovery
+
+---
 
 ## Analyst Notes
 
